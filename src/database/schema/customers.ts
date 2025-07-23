@@ -10,5 +10,4 @@ export const customers = pgTable('customers', {
   userId: uuid('user_id').references(() => users.id),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
-  lineUserId: text('line_user_id').references(() => users.lineUserId),
 });

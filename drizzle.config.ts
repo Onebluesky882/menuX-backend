@@ -1,6 +1,6 @@
-import { defineConfig } from 'drizzle-kit';
 import * as dotenv from 'dotenv';
 import { parse } from 'pg-connection-string';
+import { defineConfig } from 'drizzle-kit';
 dotenv.config({ path: '.env' });
 
 const config = parse(process.env.DATABASE_URL!);

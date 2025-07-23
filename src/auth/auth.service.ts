@@ -1,22 +1,20 @@
 import {
   BadRequestException,
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { schema, users } from 'src/database';
-import { CreateUserDto } from 'src/users/user.dto';
+import { InsertUsers } from 'src/users/user.dto';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import type { Cookie } from 'fastify-cookie';
 import * as bcrypt from 'bcrypt';
+import { eq } from 'drizzle-orm';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -27,12 +25,16 @@ export class AuthService {
   ) {}
 
   // ===== REGISTER =====
-  async register(data: CreateUserDto) {
+  async register(data: InsertUsers) {
     // Hash password
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
     try {
+      // Guard input
+      if (!data.email || !data.password || !data.username) {
+        throw new BadRequestException('Missing required fields');
+      }
       // Check if user already exists
       const existingUser = await this.db.query.users.findFirst({
         where: eq(users.email, data.email),
@@ -48,7 +50,6 @@ export class AuthService {
           email: data.email,
           username: data.username,
           password: hashedPassword,
-          emailVerified: false,
         })
         .returning()) as any[];
 
@@ -86,11 +87,6 @@ export class AuthService {
         email: String(user?.data?.email),
         username: String(user?.data?.username),
       });
-
-      await this.db
-        .update(users)
-        .set({ lastLoginAt: new Date() })
-        .where(eq(users.id, user.data?.id));
 
       return {
         message: 'Login successful',
@@ -140,61 +136,6 @@ export class AuthService {
 
   //  ===== PASSWORD RESET =====
 
-  async requestPasswordReset(email: string) {
-    // find match email
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.email, email),
-    });
-
-    // handle if fail
-    if (!user) {
-      return {
-        success: true,
-        message: 'If email exists, reset instructions sent',
-      };
-    }
-
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenExpiry = new Date(Date.now() + 3600000);
-
-    await this.db
-      .update(users)
-      .set({
-        resetToken,
-        resetTokenExpiry,
-      })
-      .where(eq(users.id, user.id));
-    this.logger.log(`Password reset requested for ${email}`);
-    return {
-      success: true,
-      message: 'Password reset instructions sent to email',
-      resetToken,
-    };
-  }
-
-  async resetPassword(token: string, newPassword: string) {
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.resetToken, token),
-    });
-
-    if (!user || !user.resetTokenExpiry || user.resetToken) {
-      throw new BadRequestException('Invalid or expiry reset the password');
-    }
-
-    const hashPassword = await bcrypt.hash(newPassword, 12);
-
-    await this.db
-      .update(users)
-      .set({
-        password: hashPassword,
-        resetToken: null,
-        resetTokenExpiry: null,
-      })
-      .where(eq(users.id, user.id));
-
-    return { success: true, message: 'Password reset successfully' };
-  }
-
   async validateUser(email: string, password: string) {
     //fide user
     const user = await this.db.query.users.findFirst({
@@ -229,8 +170,6 @@ export class AuthService {
         .values({
           email: oauthUser.email,
           username: oauthUser.username,
-          emailVerified: true,
-          provider: 'google',
         })
         .returning();
       user = newUser[0];

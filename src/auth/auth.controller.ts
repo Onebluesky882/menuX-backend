@@ -12,10 +12,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateUserDto } from 'src/users/user.dto';
 import { AuthRequest } from 'types/auth';
 import type { Cookie } from 'fastify-cookie';
-import cookie from '@fastify/cookie';
+import { InsertUsers } from 'src/users/user.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -45,7 +44,7 @@ export class AuthController {
 
   @Post('register')
   async register(
-    @Body() dto: CreateUserDto,
+    @Body() dto: InsertUsers,
     @Res({ passthrough: true }) res: Response,
   ) {
     // 1) delegate creation to the plain UsersService
@@ -111,19 +110,6 @@ export class AuthController {
       access_token: result.access_token,
       user: result.user,
     };
-  }
-  // ===== FORGOT PASSWORD =====
-  @Post('forgot-password')
-  @HttpCode(HttpStatus.OK)
-  async forgotPassword(@Body() dto: { email: string }) {
-    return this.authService.requestPasswordReset(dto.email);
-  }
-
-  // ===== RESET PASSWORD =====
-  @Post('reset-password')
-  @HttpCode(HttpStatus.OK)
-  async resetPassword(@Body() dto: { token: string; password: string }) {
-    return this.authService.resetPassword(dto.token, dto.password);
   }
 
   // ===== LOGOUT =====
