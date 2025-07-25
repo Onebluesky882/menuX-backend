@@ -14,7 +14,7 @@ export class SlipVerificationsController {
   }
   @Post('shop')
   shop(@Body() body: PostSlipDto) {
-    return this.slipVerificationsService.shopCheckBackDetail(body);
+    return this.slipVerificationsService.shopCheckAccount(body);
   }
 
   @Get(':orderId')

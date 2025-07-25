@@ -36,6 +36,28 @@ export class SlipVerificationsService {
     }
   }
 
+  async shopCheckAccount({ amount, qrcode_data }: PostSlipDto) {
+    const url = `https://ucwgwgkko4wk408ggsk0cosw.oiio.download/api/slip/${amount}/no_slip`;
+
+    try {
+      const res = await firstValueFrom(this.http.post(url, { qrcode_data }));
+      const slipData = res.data.data;
+
+      return {
+        success: true,
+        data: slipData,
+      };
+    } catch (error: any) {
+      throw new HttpException(
+        {
+          success: false,
+          message: 'transaction unsuccess!',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async postCodeToVerify({ amount, qrcode_data, orderId }: PostSlipDto) {
     const url = `https://ucwgwgkko4wk408ggsk0cosw.oiio.download/api/slip/${amount}/no_slip`;
 

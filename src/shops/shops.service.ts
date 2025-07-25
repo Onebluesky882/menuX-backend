@@ -129,7 +129,7 @@ export class ShopsService {
       };
     } catch (error) {
       this.logger.error(error);
-      console.log('error here');
+
       throw new HttpException(
         {
           success: false,
