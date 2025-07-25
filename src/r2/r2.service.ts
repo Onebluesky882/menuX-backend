@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
-import type { MultipartFile } from '@fastify/multipart';
 
 @Injectable()
 export class R2Service {
@@ -29,20 +28,21 @@ export class R2Service {
     this.bucket = configService.get('R2_BUCKET')!;
   }
 
-  async uploadFile(file: MultipartFile) {
-    // แปลงไฟล์เป็น buffer
-    const buffer = await file.toBuffer();
+  async uploadFile(file: Express.Multer.File): Promise<string> {
+    // Generate a unique filename to avoid conflicts
+    const timestamp = Date.now();
+    const fileName = `${timestamp}-${file.originalname}`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucket,
-      Key: file.filename, // filename ใน MultipartFile (ไม่ใช่ originalname)
-      Body: buffer,
+      Key: fileName, // Use generated filename
+      Body: file.buffer, // Express.Multer.File already has buffer
       ContentType: file.mimetype,
     });
+
     await this.s3.send(command);
 
     const publicUrl = this.configService.get('R2_PUBLIC');
-
-    return `${publicUrl}/${file.filename}`;
+    return `${publicUrl}/${fileName}`;
   }
 }
