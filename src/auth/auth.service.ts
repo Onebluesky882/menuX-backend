@@ -210,17 +210,16 @@ export class AuthService {
     res: ExpressResponse,
     tokens: { access_token: string; refresh_token: string },
   ) {
-    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('access_token', tokens.access_token, {
       httpOnly: true,
-      secure: isProduction,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
-      secure: isProduction,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });

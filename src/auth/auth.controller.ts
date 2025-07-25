@@ -51,7 +51,7 @@ export class AuthController {
     // 2) issue a token
     this.authService.setTokenCookies(res, {
       access_token: result.access_token,
-      refresh_token: result.access_token,
+      refresh_token: result.refresh_token,
     });
 
     // 4) return the token (and/or user profile)
