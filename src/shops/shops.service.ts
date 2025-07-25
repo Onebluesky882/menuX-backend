@@ -10,7 +10,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { schema, shops } from 'src/database';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { eq, and } from 'drizzle-orm';
-import { InsertShop } from './shops.dto';
+import { InsertShop, ReceiveBank } from './shops.dto';
 
 @Injectable()
 export class ShopsService {
@@ -140,12 +140,12 @@ export class ShopsService {
     }
   }
 
-  async update(id: string, body: InsertShop) {
+  async patch(id: string, body: ReceiveBank, userId: string) {
     try {
       const updated = await this.db
         .update(shops)
         .set(body)
-        .where(eq(shops.id, id))
+        .where(and(eq(shops.ownerId, userId), eq(shops.id, id)))
         .returning();
       return {
         data: updated,

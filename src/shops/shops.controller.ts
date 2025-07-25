@@ -6,6 +6,7 @@ import {
   Body,
   Get,
   Param,
+  Patch,
 } from '@nestjs/common';
 
 import { AuthRequest } from 'types/auth';
@@ -58,5 +59,17 @@ export class ShopsController {
   @Get(':id')
   getById(@Param('id') id: string) {
     return this.ShopsService.getById(id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':shopId')
+  async patch(
+    @Param('shopId') shopId: string,
+    @Body() data: InsertShop,
+    @Req() req: AuthRequest,
+  ) {
+    console.log('User:', req.user);
+    const userId = req.user.id;
+    return this.ShopsService.patch(shopId, data, userId);
   }
 }
