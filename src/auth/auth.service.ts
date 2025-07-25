@@ -11,8 +11,7 @@ import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { schema, users } from 'src/database';
 import { InsertUsers } from 'src/users/user.dto';
 import { ConfigService } from '@nestjs/config';
-import * as crypto from 'crypto';
-import type { Cookie } from 'fastify-cookie';
+import { Response as ExpressResponse } from 'express';
 import * as bcrypt from 'bcrypt';
 import { eq } from 'drizzle-orm';
 @Injectable()
@@ -158,8 +157,8 @@ export class AuthService {
 
     return { success: true, data: safeUser };
   }
-
-  async validateOrCreate(oauthUser: any, res: Response) {
+  // AuthService
+  async validateOrCreate(oauthUser: any) {
     let user = await this.db.query.users.findFirst({
       where: eq(users.email, oauthUser.email),
     });
@@ -181,9 +180,7 @@ export class AuthService {
       username: user?.username ?? '',
     });
 
-    this.setTokenCookies(res, tokens);
-
-    return tokens;
+    return { tokens, user };
   }
 
   // ===== UTILITY METHODS =====
@@ -210,7 +207,7 @@ export class AuthService {
   }
 
   setTokenCookies(
-    res: Cookie,
+    res: ExpressResponse,
     tokens: { access_token: string; refresh_token: string },
   ) {
     const isProduction = process.env.NODE_ENV === 'production';
@@ -229,7 +226,7 @@ export class AuthService {
     });
   }
 
-  clearTokenCookies(res: Cookie) {
+  clearTokenCookies(res: ExpressResponse) {
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
   }
