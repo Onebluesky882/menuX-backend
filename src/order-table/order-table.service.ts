@@ -9,7 +9,6 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { orderTable } from 'src/database';
 import { eq, and } from 'drizzle-orm';
 import { OrderTableDto } from './order-table.dto';
-import { nanoid } from 'nanoid';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 
 @Injectable()
@@ -27,10 +26,9 @@ export class OrderTableService {
     isSession = false,
   ) {
     try {
-      const token = isSession ? nanoid(32) : undefined;
       const inserted = await this.db
         .insert(orderTable)
-        .values({ ...dto, token: token, shopId: shopId, createdById: userId })
+        .values({ ...dto, shopId: shopId, createdById: userId })
         .returning();
 
       if (isSession) {
