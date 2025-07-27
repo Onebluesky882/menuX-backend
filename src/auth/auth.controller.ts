@@ -36,7 +36,7 @@ export class AuthController {
     this.authService.setTokenCookies(res, tokens);
 
     return res.redirect(
-      process.env.FRONTEND_REDIRECT_URL ?? 'http://localhost:5173/controller',
+      process.env.ClIENT_REDIRECT_URL ?? 'http://localhost:5173/controller',
     );
   }
 
