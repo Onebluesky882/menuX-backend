@@ -23,16 +23,7 @@ export class OrderTableController {
   // @UseGuards(ShopAccessGuard)
   //create
   @Post('/:shopId/order-table')
-  create(
-    @Body() body: OrderTableDto,
-    @Req() req: AuthRequest,
-    @Query('isSession') isSession: string,
-    @Query('shopId') shopId: string,
-  ) {
-    const userId = req.user.id;
-    const isSessionBool = isSession === 'true';
-    return this.orderTableService.create(body, shopId, userId, isSessionBool);
-  }
+
   //getAll
   // @UseGuards(ShopAccessGuard)
   @Get()
