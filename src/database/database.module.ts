@@ -19,6 +19,7 @@ dotenv.config();
         try {
           await pool.connect();
           console.log('✅ Connected to DB successfully via Drizzle + pg.Pool');
+          console.log('log');
         } catch (error) {
           console.error('❌ Failed to connect to DB:', error);
           throw error; // ให้ NestJS รู้ว่า boot ไม่ผ่าน
