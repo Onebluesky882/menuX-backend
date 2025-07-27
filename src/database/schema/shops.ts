@@ -15,3 +15,13 @@ export const shops = pgTable('shops', {
   bankAccount: text('bank_account'),
   bankId: text('bank_id'),
 });
+
+/* 
+todo 
+change name follow json 
+ 
+  receiverBank: text('receiver_Bank'),
+  receiverName: text('receiver_name'),
+  receiverId: text('receiver_id'),
+
+*/
