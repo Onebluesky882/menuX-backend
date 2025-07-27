@@ -12,13 +12,20 @@ dotenv.config();
   providers: [
     {
       provide: DATABASE_CONNECTION,
-      useFactory: (configService: ConfigService) => {
+      useFactory: async (configService: ConfigService) => {
         const pool = new Pool({
           connectionString: configService.getOrThrow('DATABASE_URL'),
         });
-
+        try {
+          await pool.connect();
+          console.log('✅ Connected to DB successfully via Drizzle + pg.Pool');
+        } catch (error) {
+          console.error('❌ Failed to connect to DB:', error);
+          throw error; // ให้ NestJS รู้ว่า boot ไม่ผ่าน
+        }
         return drizzle(pool, { schema });
       },
+
       inject: [ConfigService],
     },
   ],
