@@ -19,24 +19,13 @@ export class OrderTableService {
     private readonly db: NodePgDatabase,
   ) {}
 
-  async create(
-    dto: OrderTableDto,
-    shopId: string,
-    userId: string,
-    isSession = false,
-  ) {
+  async create(dto: OrderTableDto, shopId: string, userId: string) {
     try {
       const inserted = await this.db
         .insert(orderTable)
         .values({ ...dto, shopId: shopId, createdById: userId })
         .returning();
 
-      if (isSession) {
-        return {
-          ...inserted,
-          shareUrl: `https://yourapp.com/orders/view?token=${token}`,
-        };
-      }
       return {
         success: true,
         data: inserted,
