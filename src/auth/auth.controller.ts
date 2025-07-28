@@ -33,7 +33,7 @@ export class AuthController {
     const { tokens } = await this.authService.validateOrCreate(req.user);
 
     // Handle cookie setting in the controller
-    this.authService.setTokenCookies(res, tokens);
+    this.authService.setTokenCookies(res, tokens, req);
 
     return res.redirect(
       process.env.ClIENT_REDIRECT_URL ?? 'http://localhost:5173/controller',
@@ -44,15 +44,20 @@ export class AuthController {
   async register(
     @Body() dto: InsertUsers,
     @Res({ passthrough: true }) res: ExpressResponse,
+    @Req() req: Request,
   ) {
     // 1) delegate creation to the plain UsersService
     const result = await this.authService.register(dto);
 
     // 2) issue a token
-    this.authService.setTokenCookies(res, {
-      access_token: result.access_token,
-      refresh_token: result.refresh_token,
-    });
+    this.authService.setTokenCookies(
+      res,
+      {
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+      },
+      req,
+    );
 
     // 4) return the token (and/or user profile)
     return {
@@ -68,14 +73,19 @@ export class AuthController {
   async login(
     @Body() dto: { email: string; password: string },
     @Res({ passthrough: true }) res: ExpressResponse,
+    @Req() req: Request,
   ) {
     try {
       const result = await this.authService.login(dto.email, dto.password);
 
-      this.authService.setTokenCookies(res, {
-        access_token: result.access_token,
-        refresh_token: result.refresh_token,
-      });
+      this.authService.setTokenCookies(
+        res,
+        {
+          access_token: result.access_token,
+          refresh_token: result.refresh_token,
+        },
+        req,
+      );
 
       return {
         success: true,
@@ -102,10 +112,14 @@ export class AuthController {
     }
 
     const result = await this.authService.refreshToken(refreshToken);
-    this.authService.setTokenCookies(res, {
-      access_token: result.access_token,
-      refresh_token: result.refresh_token,
-    });
+    this.authService.setTokenCookies(
+      res,
+      {
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+      },
+      req,
+    );
     return {
       success: true,
       access_token: result.access_token,

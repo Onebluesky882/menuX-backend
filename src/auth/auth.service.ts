@@ -208,8 +208,8 @@ export class AuthService {
 
   setTokenCookies(
     res: ExpressResponse,
-    req: any,
     tokens: { access_token: string; refresh_token: string },
+    req?: any,
   ) {
     const isProd = process.env.NODE_ENV === 'production';
 
@@ -217,21 +217,22 @@ export class AuthService {
       isProd,
       accessTokenLength: tokens.access_token.length,
       refreshTokenLength: tokens.refresh_token.length,
-      domain: req.get('host'), // เพิ่มบรรทัดนี้
-      origin: req.get('origin'), // เพิ่มบรรทัดนี้
+      host: req?.get('host'), // ✅ เพิ่ม ?
+      origin: req?.get('origin'), // ✅ เพิ่ม ?
+      userAgent: req?.get('user-agent'),
     });
 
     res.cookie('access_token', tokens.access_token, {
       httpOnly: true,
       secure: isProd, // <--- secure เฉพาะ production
-      sameSite: isProd ? 'strict' : 'lax', // <--- Lax สำหรับ dev
+      sameSite: isProd ? ('none' as const) : ('lax' as const),
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
       secure: isProd, // <--- secure เฉพาะ production
-      sameSite: isProd ? 'strict' : 'lax', // <--- Lax สำหรับ dev
+      sameSite: isProd ? ('none' as const) : ('lax' as const),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -239,8 +240,21 @@ export class AuthService {
   }
 
   clearTokenCookies(res: ExpressResponse) {
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    const isProd = process.env.NODE_ENV === 'production';
+
+    const clearOptions = {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? ('none' as const) : ('lax' as const),
+      path: '/',
+    };
+
+    console.log('🧹 Clearing cookies with options:', clearOptions);
+
+    res.clearCookie('access_token', clearOptions);
+    res.clearCookie('refresh_token', clearOptions);
+
+    console.log('✅ Cookies cleared successfully');
   }
 
   signToken(payload: { id: string; email?: string; username?: string }) {
