@@ -221,19 +221,22 @@ export class AuthService {
       origin: req?.get('origin'), // ✅ เพิ่ม ?
       userAgent: req?.get('user-agent'),
     });
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true, // ✅ ต้องเป็น true สำหรับ HTTPS cross-origin
+      sameSite: 'none' as const, // ✅ จำเป็นสำหรับ cross-origin
+      path: '/',
+      domain: undefined, // ✅ ไม่ต้อง set domain ให้ browser จัดการเอง
+    };
 
     res.cookie('access_token', tokens.access_token, {
-      httpOnly: true,
-      secure: isProd, // <--- secure เฉพาะ production
-      sameSite: isProd ? ('none' as const) : ('lax' as const),
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refresh_token', tokens.refresh_token, {
-      httpOnly: true,
-      secure: isProd, // <--- secure เฉพาะ production
-      sameSite: isProd ? ('none' as const) : ('lax' as const),
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
     });
 
     console.log('✅ Cookies set successfully');
