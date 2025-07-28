@@ -211,6 +211,13 @@ export class AuthService {
     tokens: { access_token: string; refresh_token: string },
   ) {
     const isProd = process.env.NODE_ENV === 'production';
+
+    console.log('🍪 Setting cookies:', {
+      isProd,
+      accessTokenLength: tokens.access_token.length,
+      refreshTokenLength: tokens.refresh_token.length,
+    });
+
     res.cookie('access_token', tokens.access_token, {
       httpOnly: true,
       secure: isProd, // <--- secure เฉพาะ production
@@ -224,6 +231,8 @@ export class AuthService {
       sameSite: isProd ? 'strict' : 'lax', // <--- Lax สำหรับ dev
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+
+    console.log('✅ Cookies set successfully');
   }
 
   clearTokenCookies(res: ExpressResponse) {

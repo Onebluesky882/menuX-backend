@@ -121,9 +121,14 @@ export class AuthController {
     return { success: true, message: 'Logout successful' };
   }
 
-  @Get('profile')
   @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
   async getProfile(@Req() req: AuthRequest) {
+    console.log('📨 Incoming cookies:', req.cookies);
+    console.log('📨 Headers:', req.headers.cookie);
+    console.log('📨 Authorization header:', req.headers.authorization);
+
+    // Your profile logic here
     return {
       success: true,
       user: req.user,
