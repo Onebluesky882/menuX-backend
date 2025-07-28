@@ -5,14 +5,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   app.enableCors({
-    credentials: true, // ✅ จำเป็นสำหรับ cookies
+    credentials: true,
     origin: [
       'http://localhost:3000',
       'http://localhost:5173',
       'https://menu-x-five.vercel.app',
-      // ✅ เพิ่ม exact URL จาก log
+
       'https://menu-x-frontend-git-main-onebluesky882outlookcoms-projects.vercel.app',
-      // ✅ wildcard สำหรับ Vercel preview deployments
+
       /^https:\/\/menu-x-frontend-.*\.vercel\.app$/,
     ],
     allowedHeaders: ['Content-Type', 'Authorization'],

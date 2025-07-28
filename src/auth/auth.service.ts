@@ -211,22 +211,12 @@ export class AuthService {
     tokens: { access_token: string; refresh_token: string },
     req?: any,
   ) {
-    const isProd = process.env.NODE_ENV === 'production';
-
-    console.log('🍪 Setting cookies:', {
-      isProd,
-      accessTokenLength: tokens.access_token.length,
-      refreshTokenLength: tokens.refresh_token.length,
-      host: req?.get('host'), // ✅ เพิ่ม ?
-      origin: req?.get('origin'), // ✅ เพิ่ม ?
-      userAgent: req?.get('user-agent'),
-    });
     const cookieOptions = {
       httpOnly: true,
-      secure: true, // ✅ ต้องเป็น true สำหรับ HTTPS cross-origin
-      sameSite: 'none' as const, // ✅ จำเป็นสำหรับ cross-origin
+      secure: true, //
+      sameSite: 'none' as const,
       path: '/',
-      domain: undefined, // ✅ ไม่ต้อง set domain ให้ browser จัดการเอง
+      domain: undefined,
     };
 
     res.cookie('access_token', tokens.access_token, {
@@ -238,8 +228,6 @@ export class AuthService {
       ...cookieOptions,
       maxAge: 15 * 60 * 1000,
     });
-
-    console.log('✅ Cookies set successfully');
   }
 
   clearTokenCookies(res: ExpressResponse) {
@@ -252,12 +240,8 @@ export class AuthService {
       path: '/',
     };
 
-    console.log('🧹 Clearing cookies with options:', clearOptions);
-
     res.clearCookie('access_token', clearOptions);
     res.clearCookie('refresh_token', clearOptions);
-
-    console.log('✅ Cookies cleared successfully');
   }
 
   signToken(payload: { id: string; email?: string; username?: string }) {
