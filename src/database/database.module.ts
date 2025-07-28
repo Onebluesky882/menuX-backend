@@ -49,13 +49,13 @@ dotenv.config();
           });
         });
 
-        pool.on('acquire', () => {
-          logger.debug('🔗 Client acquired from pool');
-        });
+        // pool.on('acquire', () => {
+        //   logger.debug('🔗 Client acquired from pool');
+        // });
 
-        pool.on('release', () => {
-          logger.debug('🔓 Client released back to pool');
-        });
+        // pool.on('release', () => {
+        //   logger.debug('🔓 Client released back to pool');
+        // });
 
         // Test initial connection with retry logic
         let retries = 3;

@@ -1,17 +1,37 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import {
+  Injectable,
+  Logger,
+  Inject,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { DATABASE_CONNECTION } from './database-connection';
 
 @Injectable()
-export class DatabaseHealthService {
+export class DatabaseHealthService implements OnModuleInit, OnModuleDestroy {
   private logger = new Logger(DatabaseHealthService.name);
   private isHealthy = true;
   private lastHealthCheck = new Date();
+  private healthCheckInterval: NodeJS.Timeout;
 
   constructor(@Inject(DATABASE_CONNECTION) private readonly db: any) {}
 
-  // Run health check every 30 seconds
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  onModuleInit() {
+    // Start health check every 30 seconds
+    this.healthCheckInterval = setInterval(() => {
+      this.performHealthCheck();
+    }, 60000);
+
+    // Run initial health check
+    this.performHealthCheck();
+  }
+
+  onModuleDestroy() {
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+    }
+  }
+
   async performHealthCheck() {
     try {
       const isHealthy = await this.db.healthCheck();
