@@ -10,9 +10,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:5173',
-      'https://menu-x-five.vercel.app',
-
-      'https://menu-x-frontend-git-main-onebluesky882outlookcoms-projects.vercel.app',
+      'https://menux-client.vercel.app',
 
       /^https:\/\/menu-x-frontend-.*\.vercel\.app$/,
     ],
