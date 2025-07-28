@@ -208,6 +208,7 @@ export class AuthService {
 
   setTokenCookies(
     res: ExpressResponse,
+    req: any,
     tokens: { access_token: string; refresh_token: string },
   ) {
     const isProd = process.env.NODE_ENV === 'production';
@@ -216,6 +217,8 @@ export class AuthService {
       isProd,
       accessTokenLength: tokens.access_token.length,
       refreshTokenLength: tokens.refresh_token.length,
+      domain: req.get('host'), // เพิ่มบรรทัดนี้
+      origin: req.get('origin'), // เพิ่มบรรทัดนี้
     });
 
     res.cookie('access_token', tokens.access_token, {
