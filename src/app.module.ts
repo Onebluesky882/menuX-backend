@@ -16,14 +16,17 @@ import { ShopsModule } from './shops/shops.module';
 import { R2Module } from './r2/r2.module';
 import { MenuOptionsModule } from './menu_options/menu_options.module';
 import { SlipVerificationsModule } from './slip-verifications/slip-verifications.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { APP_FILTER } from '@nestjs/core';
+import { DatabaseExceptionFilter } from './database/database-exception.filter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ScheduleModule.forRoot(), // ต้องมาก่อน DatabaseModule
+    DatabaseModule, // DatabaseModule จะจัดการ health service เอง
     UsersModule,
     AuthModule,
-    DatabaseModule,
-
     TablesModule,
     ImagesModule,
     OrdersModule,
@@ -38,6 +41,11 @@ import { SlipVerificationsModule } from './slip-verifications/slip-verifications
     SlipVerificationsModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: DatabaseExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
