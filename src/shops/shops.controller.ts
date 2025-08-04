@@ -1,18 +1,18 @@
 import {
-  Controller,
-  Req,
-  UseGuards,
-  Post,
   Body,
+  Controller,
   Get,
   Param,
   Patch,
+  Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 
-import { AuthRequest } from 'types/auth';
-import { ShopsService } from './shops.service';
 import { AuthGuard } from '@nestjs/passport';
-import { InsertShop } from './shops.dto';
+import { AuthRequest } from 'types/auth';
+import { InsertShop, ReceiveBank } from './shops.dto';
+import { ShopsService } from './shops.service';
 
 @Controller('shops')
 export class ShopsController {
@@ -61,14 +61,14 @@ export class ShopsController {
     return this.ShopsService.getById(id);
   }
 
+  // update
   @UseGuards(AuthGuard('jwt'))
   @Patch(':shopId')
   async patch(
     @Param('shopId') shopId: string,
-    @Body() data: InsertShop,
+    @Body() data: ReceiveBank,
     @Req() req: AuthRequest,
   ) {
-    console.log('User:', req.user);
     const userId = req.user.id;
     return this.ShopsService.patch(shopId, data, userId);
   }

@@ -11,9 +11,9 @@ export const shops = pgTable('shops', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at'),
   active: boolean('active').default(true),
-  bankCode: text('bank_code'),
-  bankAccount: text('bank_account'),
-  bankId: text('bank_id'),
+  receiveBank: text('receive_bank'),
+  receiverId: text('receiver_id'),
+  receiverName: text('receiver_name'),
 });
 
 /* 

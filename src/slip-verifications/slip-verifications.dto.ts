@@ -6,4 +6,13 @@ export type PostSlipDto = {
   orderId?: string;
 };
 
+export type SlipVerify = {
+  amount: string;
+  qrcode_data: string;
+  orderId?: string;
+  receiverBank: string;
+  receiverName: string;
+  receiverId: string;
+};
+
 export type PaymentRecode = InferInsertModel<typeof slipVerifications>;

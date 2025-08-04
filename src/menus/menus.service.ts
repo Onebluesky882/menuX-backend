@@ -1,14 +1,14 @@
 import {
-  Injectable,
-  Inject,
   HttpException,
   HttpStatus,
+  Inject,
+  Injectable,
   Logger,
 } from '@nestjs/common';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { and, eq } from 'drizzle-orm';
-import { menus, schema, shops } from 'src/database';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { menus, schema } from 'src/database';
+import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { MenuDto } from './menus.dto';
 
 @Injectable()
@@ -120,7 +120,7 @@ export class MenusService {
           menuOptions: true,
         },
       });
-      console.log('🍜 menuWithRelations', menuWithRelations);
+
       return menuWithRelations;
     } catch (error) {
       console.error('❌ Failed to get menus with relations', error);

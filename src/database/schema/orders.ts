@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm';
 import { numeric, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { customers } from './customers';
 import { orderTable } from './orderTable';
 import { shops } from './shops';
-import { customers } from './customers';
 import { users } from './users';
 
 export const orders = pgTable('orders', {

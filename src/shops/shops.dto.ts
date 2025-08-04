@@ -5,7 +5,7 @@ export type SelectShop = InferSelectModel<typeof shops>;
 export type InsertShop = InferInsertModel<typeof shops>;
 
 export type ReceiveBank = {
-  bankCode?: string | null | undefined;
-  bankAccount?: string | null | undefined;
-  bankId?: string | null | undefined;
+  receiveBank: string | null | undefined;
+  receiverId?: string | null | undefined;
+  receiverName?: string | null | undefined;
 };

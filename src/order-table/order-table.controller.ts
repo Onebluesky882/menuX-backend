@@ -1,21 +1,19 @@
 import {
-  Controller,
-  Req,
-  UseGuards,
-  Post,
   Body,
+  Controller,
+  Delete,
   Get,
   Param,
   Patch,
-  Delete,
+  Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import { AuthGuard } from '@nestjs/passport';
 
-import { AuthRequest } from 'types/auth';
-import { OrderTableService } from './order-table.service';
 import { OrderTableDto } from './order-table.dto';
+import { OrderTableService } from './order-table.service';
 @UseGuards(AuthGuard('jwt'))
 @Controller('order-table')
 export class OrderTableController {
