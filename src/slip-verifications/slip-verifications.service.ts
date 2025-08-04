@@ -101,16 +101,10 @@ export class SlipVerificationsService {
       });
 
       if (Number(slipData.amount) !== Number(order.totalPrice)) {
-        console.log(
-          `❌ Amount mismatch: order = ${order.totalPrice}, slip = ${slipData.amount}`,
-        );
         throw new BadRequestException('Amount mismatch');
       }
 
       if (shop?.receiveBank !== slipData.receiver_bank) {
-        console.log(
-          `❌ Bank mismatch: order = ${shops.receiveBank}, slip = ${slipData.receiver_bank}`,
-        );
         throw new BadRequestException('Receiver bank mismatch');
       }
 
