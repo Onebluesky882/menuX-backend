@@ -1,38 +1,51 @@
 import {
+  Inject,
   Injectable,
   Logger,
-  Inject,
-  OnModuleInit,
   OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
+import { DATABASE_HEALTH_INTERVAL } from './constants';
 import { DATABASE_CONNECTION } from './database-connection';
 
 @Injectable()
 export class DatabaseHealthService implements OnModuleInit, OnModuleDestroy {
-  private logger = new Logger(DatabaseHealthService.name);
+  private readonly logger = new Logger(DatabaseHealthService.name);
   private isHealthy = true;
-  private lastHealthCheck = new Date();
-  private healthCheckInterval: NodeJS.Timeout;
+  private lastHealthCheck = new Date(0);
+  private healthCheckInterval: NodeJS.Timeout | null = null;
+  private readonly intervalMs: number;
+  private performingCheck = false;
 
-  constructor(@Inject(DATABASE_CONNECTION) private readonly db: any) {}
+  constructor(
+    @Inject(DATABASE_CONNECTION) private readonly db: any,
+    @Inject(DATABASE_HEALTH_INTERVAL) private readonly intervalSeconds: number,
+  ) {
+    this.intervalMs = intervalSeconds * 1000;
+  }
 
   onModuleInit() {
-    // Start health check every 30 seconds
-    this.healthCheckInterval = setInterval(() => {
-      this.performHealthCheck();
-    }, 60000);
+    this.performHealthCheck(); // initial check
 
-    // Run initial health check
-    this.performHealthCheck();
+    this.healthCheckInterval = setInterval(() => {
+      if (this.performingCheck) {
+        // ป้องกันเรียกซ้อน
+        this.logger.debug('Health check skipped to avoid overlap.');
+        return;
+      }
+      this.performHealthCheck();
+    }, this.intervalMs);
   }
 
   onModuleDestroy() {
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = null;
     }
   }
 
   async performHealthCheck() {
+    this.performingCheck = true;
     try {
       const isHealthy = await this.db.healthCheck();
 
@@ -46,30 +59,50 @@ export class DatabaseHealthService implements OnModuleInit, OnModuleDestroy {
 
       this.lastHealthCheck = new Date();
 
-      // Log pool info periodically
-      if (this.isHealthy) {
+      // Log pool info เฉพาะตอน healthy เท่านั้น
+      if (this.isHealthy && typeof this.db.getPoolInfo === 'function') {
         const poolInfo = this.db.getPoolInfo();
         this.logger.debug(
           `📊 Pool Status - Total: ${poolInfo.totalCount}, Idle: ${poolInfo.idleCount}, Waiting: ${poolInfo.waitingCount}`,
         );
       }
     } catch (error) {
-      this.logger.error('❌ Health check error:', error.message);
+      if (this.isHealthy) {
+        this.logger.error('❌ Health check error:', error.message);
+      } else {
+        this.logger.debug('Health check error while unhealthy:', error.message);
+      }
       this.isHealthy = false;
+    } finally {
+      this.performingCheck = false;
     }
   }
 
   getHealthStatus() {
+    let poolInfo = null;
+    if (typeof this.db.getPoolInfo === 'function') {
+      try {
+        poolInfo = this.db.getPoolInfo();
+      } catch {
+        poolInfo = null;
+      }
+    }
+
     return {
       isHealthy: this.isHealthy,
       lastCheck: this.lastHealthCheck,
-      poolInfo: this.db.getPoolInfo(),
+      poolInfo,
     };
   }
 
   async forceReconnect() {
     this.logger.log('🔄 Forcing database reconnection...');
     try {
+      // สมมติว่าฐานข้อมูลมี method reconnect จริง (ถ้าไม่มี อาจต้อง implement เอง)
+      if (typeof this.db.reconnect === 'function') {
+        await this.db.reconnect();
+      }
+      // หลังจาก reconnect ตรวจสุขภาพอีกที
       await this.performHealthCheck();
       return this.isHealthy;
     } catch (error) {

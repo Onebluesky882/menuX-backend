@@ -1,30 +1,40 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpStatus,
-  Logger,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 
 @Injectable()
 @Catch()
 export class DatabaseExceptionFilter implements ExceptionFilter {
-  private logger = new Logger(DatabaseExceptionFilter.name);
+  private readonly logger = new Logger(DatabaseExceptionFilter.name);
 
-  async catch(exception: any, host: ArgumentsHost) {
+  // เก็บ patterns ไว้ที่ class-level (สร้างครั้งเดียว)
+  private static readonly connectionErrorPatterns = [
+    'connection terminated unexpectedly',
+    'connection terminated',
+    'econnreset',
+    'enotfound',
+    'etimedout',
+    'connection timeout',
+    'server closed the connection',
+    'connection lost',
+    'pool is closed',
+    'cannot use a pool after calling end',
+  ];
+
+  catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest();
 
-    // Check if it's a database connection error
-    const isDatabaseError = this.isDatabaseConnectionError(exception);
-
-    if (isDatabaseError) {
+    if (this.isDatabaseConnectionError(exception)) {
       this.logger.error(
-        `🚨 Database connection error on ${request.method} ${request.url}:`,
-        exception.message,
+        `🚨 Database connection error on ${request.method} ${request.url}: ${exception.message}`,
       );
 
       response.status(HttpStatus.SERVICE_UNAVAILABLE).json({
@@ -34,46 +44,35 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
         path: request.url,
         error: 'Service Unavailable',
       });
-    } else {
-      // Handle other exceptions
-      const status = exception.getStatus
+      return;
+    }
+
+    // Handle other exceptions
+    const status =
+      typeof exception.getStatus === 'function'
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
-      const message = exception.message || 'Internal server error';
+    const message = exception.message || 'Internal server error';
 
-      this.logger.error(
-        `❌ Application error on ${request.method} ${request.url}:`,
-        exception.message,
-      );
+    this.logger.error(
+      `❌ Application error on ${request.method} ${request.url}: ${message}`,
+    );
 
-      response.status(status).json({
-        statusCode: status,
-        message: message,
-        timestamp: new Date().toISOString(),
-        path: request.url,
-      });
-    }
+    response.status(status).json({
+      statusCode: status,
+      message,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+    });
   }
 
   private isDatabaseConnectionError(exception: any): boolean {
-    if (!exception.message) return false;
-
-    const connectionErrorPatterns = [
-      'Connection terminated unexpectedly',
-      'Connection terminated',
-      'ECONNRESET',
-      'ENOTFOUND',
-      'ETIMEDOUT',
-      'connection timeout',
-      'server closed the connection',
-      'Connection lost',
-      'Pool is closed',
-      'Cannot use a pool after calling end',
-    ];
+    if (!exception || typeof exception.message !== 'string') return false;
 
     const errorMessage = exception.message.toLowerCase();
-    return connectionErrorPatterns.some((pattern) =>
-      errorMessage.includes(pattern.toLowerCase()),
+
+    return DatabaseExceptionFilter.connectionErrorPatterns.some((pattern) =>
+      errorMessage.includes(pattern),
     );
   }
 }
