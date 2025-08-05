@@ -15,3 +15,13 @@ export type CreateOrderDto = {
     optionId?: string;
   }[];
 };
+
+export type OrderPurchase = {
+  status:
+    | 'pending'
+    | 'paid'
+    | 'in_progress'
+    | 'ready'
+    | 'completed'
+    | 'canceled';
+};

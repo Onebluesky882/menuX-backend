@@ -1,16 +1,7 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  Param,
-  Patch,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 
+import { CreateOrderDto, OrderPurchase } from './orders.dto';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto, InsertOrders } from './orders.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -28,21 +19,8 @@ export class OrdersController {
     return this.ordersService.getOrderById(id);
   }
 
-  // update
-  //@UseGuards(ShopAccessGuard)
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() body: InsertOrders,
-    @Query('shopId') shopId: string,
-  ) {
-    return this.ordersService.update(id, body, shopId);
-  }
-
-  // delete
-  //@UseGuards(ShopAccessGuard)
-  @Delete(':id')
-  delete(@Param('id') id: string, @Query('shopId') shopId: string) {
-    return this.ordersService.delete(id, shopId);
+  @Patch('purchase/:id')
+  patch(@Param('id') id: string, @Body() body: OrderPurchase) {
+    return this.ordersService.updateOrderPurchase(id, body);
   }
 }

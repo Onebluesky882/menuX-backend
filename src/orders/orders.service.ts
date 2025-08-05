@@ -5,18 +5,20 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { error } from 'console';
+import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { orders, orderItems } from 'src/database';
+import { orderItems, orders, schema } from 'src/database';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
-import { eq, and } from 'drizzle-orm';
-import type { CreateOrderDto, InsertOrders } from './orders.dto';
+import { slipVerifications } from '../database/schema/slipVerifications';
+import type { CreateOrderDto, OrderPurchase } from './orders.dto';
 
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
   constructor(
     @Inject(DATABASE_CONNECTION)
-    private readonly db: NodePgDatabase,
+    private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
   async create(data: CreateOrderDto) {
@@ -79,51 +81,41 @@ export class OrdersService {
     }
   }
 
-  async update(id: string, body: InsertOrders, shopId: string) {
-    try {
-      const updated = await this.db
-        .update(orders)
-        .set(body)
-        .where(and(eq(orders.id, id), eq(orders.shopId, shopId)))
-        .returning();
+  // async update(id: string, body: InsertOrders, shopId: string) {
+  //   try {
+  //     const updated = await this.db
+  //       .update(orders)
+  //       .set(body)
+  //       .where(and(eq(orders.id, id), eq(orders.shopId, shopId)))
+  //       .returning();
 
-      const updateOrder = updated[0];
-      return {
-        data: updated,
-        success: true,
-      };
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException(
-        {
-          success: false,
-          message: ' fail to update order ',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-  async delete(id: string, shopId: string) {
-    try {
-      await this.db
-        .delete(orders)
-        .where(and(eq(orders.id, id), eq(orders.shopId, shopId)));
+  //     const updateOrder = updated[0];
+  //     return {
+  //       data: updated,
+  //       success: true,
+  //     };
+  //   } catch (error) {
+  //     this.logger.error(error);
+  //     throw new HttpException(
+  //       {
+  //         success: false,
+  //         message: ' fail to update order ',
+  //       },
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
-      return {
-        success: true,
-      };
-    } catch (error) {
-      this.logger.error(error);
-      throw new HttpException(
-        {
-          success: false,
-          message: 'Fail delete order',
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+  async updateOrderPurchase(orderId: string, body: OrderPurchase) {
+    const orderPurchase = await this.db.query.slipVerifications.findFirst({
+      where: eq(slipVerifications.orderId, orderId),
+    });
+    if (!orderPurchase) {
+      throw error('no order purchase');
     }
+    return this.db
+      .update(orders)
+      .set({ ...body, status: 'paid' })
+      .returning();
   }
-}
-function convertThaiTime() {
-  throw new Error('Function not implemented.');
 }
