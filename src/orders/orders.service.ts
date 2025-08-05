@@ -81,31 +81,10 @@ export class OrdersService {
     }
   }
 
-  // async update(id: string, body: InsertOrders, shopId: string) {
-  //   try {
-  //     const updated = await this.db
-  //       .update(orders)
-  //       .set(body)
-  //       .where(and(eq(orders.id, id), eq(orders.shopId, shopId)))
-  //       .returning();
+  // todo section 2
+  // redirect consumer to. order/purchase/id
 
-  //     const updateOrder = updated[0];
-  //     return {
-  //       data: updated,
-  //       success: true,
-  //     };
-  //   } catch (error) {
-  //     this.logger.error(error);
-  //     throw new HttpException(
-  //       {
-  //         success: false,
-  //         message: ' fail to update order ',
-  //       },
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
-
+  // for consumer side
   async updateOrderPurchase(orderId: string, body: OrderPurchase) {
     const orderPurchase = await this.db.query.slipVerifications.findFirst({
       where: eq(slipVerifications.orderId, orderId),
@@ -116,6 +95,64 @@ export class OrdersService {
     return this.db
       .update(orders)
       .set({ ...body, status: 'paid' })
+      .where(eq(orders.id, orderId))
       .returning();
+  }
+
+  // for shop side get status update #3
+  // #3 shop see order status paid
+  // after shop check orderItem done all than change order status to be done too
+  async getOrderPurchase() {
+    const orderPurchase = await this.db
+      .select({
+        // Order fields
+        orderId: orders.id,
+        orderStatus: orders.status,
+        orderCreatedAt: orders.createdAt,
+        orderTotalAmount: orders.totalPrice,
+        orderShopId: orders.shopId,
+        // Add any other order fields you need
+
+        // OrderItem fields
+        itemId: orderItems.id,
+        itemMenuId: orderItems.menuId,
+        itemQuantity: orderItems.quantity,
+        itemPriceEach: orderItems.priceEach,
+        itemTotalPrice: orderItems.totalPrice,
+        // Add any other orderItem fields you need
+      })
+      .from(orders)
+      .leftJoin(orderItems, eq(orders.id, orderItems.orderId))
+      .where(eq(orders.status, 'paid'));
+
+    // array data with orderItems join
+    const grouped = new Map();
+    for (const row of orderPurchase) {
+      const orderId = row.orderId;
+
+      if (!grouped.has(orderId)) {
+        grouped.set(orderId, {
+          id: row.orderId,
+          status: row.orderStatus,
+          createdAt: row.orderCreatedAt,
+          totalAmount: row.orderTotalAmount,
+          // Add other order fields...
+          orderItems: [],
+        });
+      }
+
+      if (row.itemId) {
+        grouped.get(orderId).orderItems.push({
+          id: row.itemId,
+          menuId: row.itemMenuId,
+          quantity: row.itemQuantity,
+          priceEach: row.itemPriceEach,
+        });
+      }
+    }
+
+    return {
+      data: Array.from(grouped.values()),
+    };
   }
 }

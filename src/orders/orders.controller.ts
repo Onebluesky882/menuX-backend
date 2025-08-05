@@ -19,8 +19,13 @@ export class OrdersController {
     return this.ordersService.getOrderById(id);
   }
 
-  @Patch('purchase/:id')
-  patch(@Param('id') id: string, @Body() body: OrderPurchase) {
-    return this.ordersService.updateOrderPurchase(id, body);
+  @Get('purchase/:orderId')
+  get(@Param('orderId') id: string) {
+    return this.ordersService.getOrderPurchase();
+  }
+
+  @Patch(':orderId')
+  patch(@Param('orderId') orderId: string, @Body() body: OrderPurchase) {
+    return this.ordersService.updateOrderPurchase(orderId, body);
   }
 }

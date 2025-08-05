@@ -1,11 +1,27 @@
 import { relations } from 'drizzle-orm';
-import { images, menuOptions, menus } from '..';
-import { shops } from '..';
+import { images, menuOptions, menus, shops } from '..';
 
 //  menu reference shop
 export const menuRelationShop = relations(menus, ({ one }) => ({
   shop: one(shops, {
     fields: [menus.shopId],
+    references: [shops.id],
+  }),
+}));
+
+// schema/relations/menuOptionsRelations.ts
+
+export const menuOptionRelations = relations(menuOptions, ({ one }) => ({
+  menu: one(menus, {
+    fields: [menuOptions.menuId],
+    references: [menus.id],
+    relationName: 'menuOptions', // ต้องตรงกับใน menuRelations
+  }),
+}));
+
+export const tableRelationShop = relations(images, ({ one }) => ({
+  shop: one(shops, {
+    fields: [images.shopId],
     references: [shops.id],
   }),
 }));

@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1753279774831,
-      "tag": "0000_happy_radioactive_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1753367461500,
-      "tag": "0001_curvy_tyrannus",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1754103285168,
-      "tag": "0002_flippant_hedge_knight",
+      "when": 1754387882604,
+      "tag": "0000_startup",
       "breakpoints": true
     }
   ]

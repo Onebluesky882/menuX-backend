@@ -27,7 +27,6 @@ export class SlipVerificationsService {
     try {
       const res = await firstValueFrom(this.http.post(url, { qrcode_data }));
       const slipData = res.data.data;
-
       return {
         success: true,
         data: slipData,
