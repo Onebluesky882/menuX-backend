@@ -137,6 +137,7 @@ export class SlipVerificationsService {
         {
           success: false,
           error: error.message,
+          reason: error?.response?.data || null,
         },
         HttpStatus.BAD_REQUEST,
       );
