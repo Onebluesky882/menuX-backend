@@ -1,24 +1,29 @@
 import { relations } from 'drizzle-orm';
-import { orderItems, shops } from '..';
+import { menuOptions } from '../schema/menuOptions';
+import { menus } from '../schema/menus';
+import { orderItems } from '../schema/orderItems';
 import { orders } from '../schema/orders';
+import { shops } from '../schema/shops'; // หรือจาก '..' แล้วแต่ path
 
-// 1. order → orderItems
-export const ordersRelations = relations(orders, ({ many }) => ({
-  items: many(orderItems),
-}));
-
-// 2. orderItem → order
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  menu: one(menus, {
+    fields: [orderItems.menuId],
+    references: [menus.id],
+  }),
+  menuOption: one(menuOptions, {
+    fields: [orderItems.optionId],
+    references: [menuOptions.id],
+  }),
   order: one(orders, {
     fields: [orderItems.orderId],
     references: [orders.id],
   }),
 }));
 
-// orders.ShopId <-> shops.id
-export const ordersRelationsWithShop = relations(orders, ({ one }) => ({
+export const ordersRelations = relations(orders, ({ one, many }) => ({
   shop: one(shops, {
     fields: [orders.shopId],
     references: [shops.id],
   }),
+  orderItems: many(orderItems),
 }));

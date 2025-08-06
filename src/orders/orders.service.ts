@@ -104,14 +104,48 @@ export class OrdersService {
   // after shop check orderItem done all than change order status to be done too
   async getOrderPurchase(orderId: string) {
     try {
-      console.log('into here');
       const orderPurchase = await this.db.query.orders.findMany({
         where: eq(orders.id, orderId),
+        columns: {
+          id: true,
+          status: true,
+          quantity: true,
+          totalPrice: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         with: {
-          orderItems: true,
+          shop: {
+            columns: {
+              name: true,
+            },
+          },
+          orderItems: {
+            columns: {
+              id: true,
+              quantity: true,
+              priceEach: true,
+              totalPrice: true,
+              status: true,
+            },
+            with: {
+              menu: {
+                columns: {
+                  name: true,
+                  price: true,
+                },
+              },
+              menuOption: {
+                columns: {
+                  label: true,
+                  price: true,
+                },
+              },
+            },
+          },
         },
       });
-      console.log('orderPurchase', orderPurchase);
+
       return {
         data: orderPurchase,
       };
