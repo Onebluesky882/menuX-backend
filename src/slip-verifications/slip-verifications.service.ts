@@ -13,7 +13,7 @@ import { slipVerifications } from 'src/database';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { schema, shops } from '../database';
 import { orders } from '../database/schema/orders';
-import { PostSlipDto } from './slip-verifications.dto';
+import { PostSlipDto, Shop } from './slip-verifications.dto';
 @Injectable()
 export class SlipVerificationsService {
   constructor(
@@ -105,7 +105,7 @@ export class SlipVerificationsService {
       }
 
       const order = rawResult.orders;
-      const shop = rawResult.shops ?? null;
+      const shop: Shop = rawResult.shops ?? null;
 
       if (order.totalPrice == null) {
         throw new BadRequestException('Order missing total price');
@@ -120,6 +120,16 @@ export class SlipVerificationsService {
       if (shop?.receiveBank !== slipData.receiver_bank) {
         throw new BadRequestException(
           `Receiver bank mismatch: slip=${slipData.receiver_bank}, expected=${shop?.receiveBank}`,
+        );
+      }
+      if (shop?.receiverName !== slipData.receiver_name) {
+        throw new BadRequestException(
+          `Receiver name mismatch: slip=${slipData.receiver_name}, expected=${shop?.receiverName}`,
+        );
+      }
+      if (shop?.receiverId !== slipData.receiver_id) {
+        throw new BadRequestException(
+          `Receiver id mismatch: slip=${slipData.receiver_id}, expected=${shop?.receiverId}`,
         );
       }
 
