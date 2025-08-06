@@ -9,7 +9,7 @@ export class SlipVerificationsController {
   ) {}
   @Post()
   post(@Body() body: SlipVerify) {
-    return this.slipVerificationsService.recordSlipVerification(body);
+    return this.slipVerificationsService.slipVerification(body);
   }
   @Post('shop')
   shop(@Body() body: PostSlipDto) {

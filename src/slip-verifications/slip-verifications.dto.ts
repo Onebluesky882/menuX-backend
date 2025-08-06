@@ -1,5 +1,8 @@
 import { InferInsertModel } from 'drizzle-orm';
-import { slipVerifications } from 'src/database';
+import { orders, shops, slipVerifications } from '../../src/database/index';
+
+export type Order = InferInsertModel<typeof orders>;
+export type Shop = InferInsertModel<typeof shops>;
 export type PostSlipDto = {
   amount: string;
   qrcode_data: string;
@@ -9,7 +12,7 @@ export type PostSlipDto = {
 export type SlipVerify = {
   amount: string;
   qrcode_data: string;
-  orderId?: string;
+  orderId: string;
   receiverBank: string;
   receiverName: string;
   receiverId: string;
