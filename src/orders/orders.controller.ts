@@ -20,7 +20,6 @@ export class OrdersController {
 
   @Get('purchase/:orderId')
   get(@Param('orderId') orderId: string) {
-    console.log('orderId', orderId);
     return this.ordersService.getOrderPurchase(orderId);
   }
 
