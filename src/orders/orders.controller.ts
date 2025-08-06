@@ -9,7 +9,6 @@ export class OrdersController {
 
   @Post()
   create(@Body() cartItems: CreateOrderDto) {
-    console.log('Received createOrderDto:', cartItems);
     return this.ordersService.create(cartItems);
   }
 
@@ -20,8 +19,9 @@ export class OrdersController {
   }
 
   @Get('purchase/:orderId')
-  get(@Param('orderId') id: string) {
-    return this.ordersService.getOrderPurchase();
+  get(@Param('orderId') orderId: string) {
+    console.log('orderId', orderId);
+    return this.ordersService.getOrderPurchase(orderId);
   }
 
   @Patch(':orderId')

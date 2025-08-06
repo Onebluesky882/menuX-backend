@@ -102,57 +102,21 @@ export class OrdersService {
   // for shop side get status update #3
   // #3 shop see order status paid
   // after shop check orderItem done all than change order status to be done too
-  async getOrderPurchase() {
-    const orderPurchase = await this.db
-      .select({
-        // Order fields
-        orderId: orders.id,
-        orderStatus: orders.status,
-        orderCreatedAt: orders.createdAt,
-        orderTotalAmount: orders.totalPrice,
-        orderShopId: orders.shopId,
-        // Add any other order fields you need
-
-        // OrderItem fields
-        itemId: orderItems.id,
-        itemMenuId: orderItems.menuId,
-        itemQuantity: orderItems.quantity,
-        itemPriceEach: orderItems.priceEach,
-        itemTotalPrice: orderItems.totalPrice,
-        // Add any other orderItem fields you need
-      })
-      .from(orders)
-      .leftJoin(orderItems, eq(orders.id, orderItems.orderId))
-      .where(eq(orders.status, 'paid'));
-
-    // array data with orderItems join
-    const grouped = new Map();
-    for (const row of orderPurchase) {
-      const orderId = row.orderId;
-
-      if (!grouped.has(orderId)) {
-        grouped.set(orderId, {
-          id: row.orderId,
-          status: row.orderStatus,
-          createdAt: row.orderCreatedAt,
-          totalAmount: row.orderTotalAmount,
-          // Add other order fields...
-          orderItems: [],
-        });
-      }
-
-      if (row.itemId) {
-        grouped.get(orderId).orderItems.push({
-          id: row.itemId,
-          menuId: row.itemMenuId,
-          quantity: row.itemQuantity,
-          priceEach: row.itemPriceEach,
-        });
-      }
+  async getOrderPurchase(orderId: string) {
+    try {
+      console.log('into here');
+      const orderPurchase = await this.db.query.orders.findMany({
+        where: eq(orders.id, orderId),
+        with: {
+          orderItems: true,
+        },
+      });
+      console.log('orderPurchase', orderPurchase);
+      return {
+        data: orderPurchase,
+      };
+    } catch (error) {
+      console.error('❌ Failed to get menus with relations', error);
     }
-
-    return {
-      data: Array.from(grouped.values()),
-    };
   }
 }

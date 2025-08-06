@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm';
 import { numeric, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { orders } from './orders';
-import { menus } from './menus';
 import { menuOptions } from './menuOptions';
+import { menus } from './menus';
+import { orders } from './orders';
 
 export const orderItems = pgTable('order_items', {
   id: uuid('id')
