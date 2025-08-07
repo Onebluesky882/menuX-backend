@@ -15,6 +15,7 @@ async function bootstrap() {
 
       /^https:\/\/menu-x-frontend-.*\.vercel\.app$/,
     ],
+
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     exposedHeaders: ['Set-Cookie'], // ✅ เพิ่มเพื่อให้ frontend เห็น
