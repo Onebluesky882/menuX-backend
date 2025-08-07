@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { error } from 'console';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { orderItems, orders, schema } from 'src/database';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
@@ -99,13 +99,59 @@ export class OrdersService {
       .returning();
   }
 
-  // for shop side get status update #3
-  // #3 shop see order status paid
-  // after shop check orderItem done all than change order status to be done too
-  async getOrderPurchase(orderId: string) {
+  async getAllPurchases(shopId: string) {
+    try {
+      const getAllPurchases = await this.db.query.orders.findMany({
+        where: and(eq(orders.shopId, shopId), eq(orders.status, 'paid')),
+
+        columns: {
+          id: true,
+          status: true,
+          quantity: true,
+          totalPrice: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        with: {
+          shop: {
+            columns: {
+              id: true,
+            },
+          },
+          orderItems: {
+            columns: {
+              id: true,
+              quantity: true,
+              priceEach: true,
+              totalPrice: true,
+              status: true,
+            },
+            with: {
+              menu: {
+                columns: {
+                  name: true,
+                  price: true,
+                },
+              },
+              menuOption: {
+                columns: {
+                  label: true,
+                  price: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      return {
+        data: getAllPurchases,
+      };
+    } catch (error) {}
+  }
+  async getOrderPurchaseById(orderId: string) {
     try {
       const orderPurchase = await this.db.query.orders.findMany({
-        where: eq(orders.id, orderId),
+        where: and(eq(orders.id, orderId), eq(orders.status, 'paid')),
         columns: {
           id: true,
           status: true,

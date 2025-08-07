@@ -12,6 +12,12 @@ export class OrdersController {
     return this.ordersService.create(cartItems);
   }
 
+  @Get('purchases/:shopId')
+  getAllPurchases(@Param('shopId') shopId: string) {
+    console.log('shopId', shopId);
+    return this.ordersService.getAllPurchases(shopId);
+  }
+
   @Get(':id')
   getById(@Param('id') id: string) {
     console.log('id ', id);
@@ -19,8 +25,8 @@ export class OrdersController {
   }
 
   @Get('purchase/:orderId')
-  get(@Param('orderId') orderId: string) {
-    return this.ordersService.getOrderPurchase(orderId);
+  getOrderPurchaseId(@Param('orderId') orderId: string) {
+    return this.ordersService.getOrderPurchaseById(orderId);
   }
 
   @Patch(':orderId')

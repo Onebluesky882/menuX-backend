@@ -10,12 +10,11 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthRequest } from 'types/auth';
+import { Response as ExpressResponse, Request } from 'express';
 import { InsertUsers } from 'src/users/user.dto';
-import { Response as ExpressResponse } from 'express';
-import { Request } from 'express';
+import { AuthRequest } from 'types/auth';
+import { AuthService } from './auth.service';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -138,10 +137,6 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async getProfile(@Req() req: AuthRequest) {
-    console.log('📨 Incoming cookies:', req.cookies);
-    console.log('📨 Headers:', req.headers.cookie);
-    console.log('📨 Authorization header:', req.headers.authorization);
-
     // Your profile logic here
     return {
       success: true,
